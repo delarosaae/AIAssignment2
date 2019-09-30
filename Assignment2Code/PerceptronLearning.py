@@ -17,8 +17,6 @@ def main():
         weightArray.append(float(line[1]))
         genderArray.append(float(line[2]))
 
-    for y in heightArray:
-        print(y)
 
 
 if __name__ == "__main__":
