@@ -47,8 +47,7 @@ def main():
     for i in range(0, lengthOfGender):
         zi = (((genderArray[i] - minGender) / (maxGender - minGender)) * (normalMax - normalMin)) + normalMin
         normalizedGenderArray[i] = zi
-    for y in normalizedGenderArray:
-        print(y)
+    
 
 if __name__ == "__main__":
     main()
