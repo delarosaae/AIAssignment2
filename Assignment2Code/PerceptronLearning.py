@@ -17,27 +17,38 @@ def main():
         weightArray.append(float(line[1]))
         genderArray.append(float(line[2]))
 
-
     maxHeight = max(heightArray)
     minHeight = min(heightArray)
     maxWeight = max(weightArray)
     minWeight = min(weightArray)
+    maxGender = max(genderArray)
+    minGender = min(genderArray)
 
     lengthOfWeight = len(heightArray)
     lengthOfHeight = len(weightArray)
+    lengthOfGender = len(genderArray)
 
     # lists that will include the normalized values and all values will initially be 0
-    normalizedHeightArray = []
+    normalizedHeightArray = [0] * lengthOfHeight
     normalizedWeightArray = [0] * lengthOfWeight
-    normalizedGenderArray = []
+    normalizedGenderArray = [0] * lengthOfGender
+
+    normalMin = -.5
+    normalMax = .5
 
     for i in range(0, lengthOfWeight):
-        zi = (weightArray[i] - minWeight) / (maxWeight - minWeight)
+        zi = (((weightArray[i] - minWeight) / (maxWeight - minWeight)) * (normalMax - normalMin)) + normalMin
         normalizedWeightArray[i] = zi
-    for y in normalizedWeightArray:
+
+    for i in range(0, lengthOfHeight):
+        zi = (((heightArray[i] - minHeight) / (maxHeight - minHeight)) * (normalMax - normalMin)) + normalMin
+        normalizedHeightArray[i] = zi
+
+    for i in range(0, lengthOfGender):
+        zi = (((genderArray[i] - minGender) / (maxGender - minGender)) * (normalMax - normalMin)) + normalMin
+        normalizedGenderArray[i] = zi
+    for y in normalizedGenderArray:
         print(y)
-
-
 
 if __name__ == "__main__":
     main()
