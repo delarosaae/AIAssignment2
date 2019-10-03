@@ -1,9 +1,11 @@
+import numpy as np
+import math
 
 import random
 
 def main():
     # open the file that we are reading
-    file = open("../groupA.txt", "r")
+    file = open("../groupB.txt", "r")
     # get each line
     fileContents = file.readlines()
 
@@ -51,46 +53,76 @@ def main():
         zi = (((genderArray[i] - minGender) / (maxGender - minGender)) * (normalMax - normalMin)) + normalMin
         normalizedGenderArray[i] = zi
 
+    trainArray = list(zip(normalizedHeightArray, normalizedWeightArray, normalizedGenderArray))
 
-def train(trainArray, testArray):
+    #ep = .00001
+    ep = 100
+    #ep = 1450
+    train(trainArray, ep, lengthOfHeight, genderArray)
+
+
+def train(trainArray, epsilon, numberOfInputs, normGender):
+    f = open("results.txt", "w+")
     tc = 5000
-    np = len(trainArray)
+    np = numberOfInputs
     ni = 3
     alpha = 0.1
-    weights = [0,0,0]
-    for i in range(0,2):
-        num = random.uniform(-3, 3)
-        weights[i] = round(num, 2)
-    train = trainArray
-    dout = [0, 1]
+    weights = [0, 0, 0]
+    dOut = normGender
+    num = random.uniform(-.5, .5)
+    num1 = random.uniform(-.5, .5)
+    num2 = random.uniform(-.5, .5)
+    weights[0] = num
+    weights[1] = num1
+    weights[2] = num2
 
-    sentinal = False
-    for i in range(0, tc -1):
-        for j in range(0, np - 1):
+    trainIt = trainArray
+    dout = [-.5, .5]
+    sentianl = False
+    totalTE = 0
+    ou = [0.0] * len(normGender)
+
+    for i in range(0, tc):
+        for j in range(0, np):
             net = 0
             for k in range(0, ni):
-                net = net + weights[k] * train[j][k]
-            ou = sign(net)
-            err = dout[j] - ou
+                net = net + weights[k] * trainIt[j][k]
+            ou[j] = sign(net)
+            # ou = sign(net)
+            err = dOut[j] - ou[j]
+            te = err * err
+            totalTE = totalTE + te
+            if totalTE < epsilon:
+                break
             learn = alpha * err
-            for i in range(0, ni):
-                weights[i] = weights[i] + learn*train[j][k]
+            print(i, j, net, err, learn, weights, f, totalTE)
+            f.write("ite= " + str(i) + "  p=" + str(j) + " net= " + str(net) + " err= " + str(err) + " lrn= " + str(learn) + " wei= " + str(weights[0]) +" , " + str(weights[1]) + " , " + str(weights[2]) + "\n")
+            for b in range(0, ni):
+                weights[b] = weights[b] + learn*trainIt[j][b]
+            #print(totalTE)
+        #print(totalTE)
+
+    f.close()
+
+
+def printArr(i, j, net, err, learn, weights, f, te):
+    print("ite= " + i + "  p=" + j + " net= " + net + " err= " + err + " lrn= " + learn + " wei= " + weights + "   TE= " +te)
 
 
 # hard activation
-def sign(array):
-    number = array.pop(0)
-    y = .5
-    if number > 0:
-        y = 1
-    else:
-        y = 0
-    return y
+#def sign(net):
+#    number = net
+#    y = .5
+#    if number > 0:
+#        y = .5
+#    else:
+#        y = -.5
+#    return y
 
 # soft activation
 def sign(net):
     k = 3
-    o = (1) / (1 + 10**(k * net * (-1)))
+    o = (1) / (1 + math.exp(k * net * (-1)))
     return o
 
 
