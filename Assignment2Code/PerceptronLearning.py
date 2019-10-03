@@ -1,11 +1,12 @@
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 import random
 
 def main():
     # open the file that we are reading
-    file = open("../groupB.txt", "r")
+    file = open("../groupA.txt", "r")
     # get each line
     fileContents = file.readlines()
 
@@ -53,20 +54,23 @@ def main():
         zi = (((genderArray[i] - minGender) / (maxGender - minGender)) * (normalMax - normalMin)) + normalMin
         normalizedGenderArray[i] = zi
 
-    trainArray = list(zip(normalizedHeightArray, normalizedWeightArray, normalizedGenderArray))
 
-    #ep = .00001
-    ep = 100
+    percent = .75
+    #percent = .25
+    trainArray, testArray = percentData(normalizedHeightArray, normalizedWeightArray, normalizedGenderArray, percent)
+
+    ep = .00001
+    #ep = 100
     #ep = 1450
-    train(trainArray, ep, lengthOfHeight, genderArray)
+    train(trainArray, ep, lengthOfHeight, genderArray, normalizedHeightArray, normalizedWeightArray)
 
 
-def train(trainArray, epsilon, numberOfInputs, normGender):
-    f = open("results.txt", "w+")
+def train(trainArray, epsilon, numberOfInputs, normGender, height, weight):
+    f = open("ASoft.txt", "w+")
     tc = 5000
     np = numberOfInputs
     ni = 3
-    alpha = 0.1
+    alpha = .1
     weights = [0, 0, 0]
     dOut = normGender
     num = random.uniform(-.5, .5)
@@ -77,32 +81,47 @@ def train(trainArray, epsilon, numberOfInputs, normGender):
     weights[2] = num2
 
     trainIt = trainArray
-    dout = [-.5, .5]
+    # dout = [-.5, .5]
     sentianl = False
     totalTE = 0
     ou = [0.0] * len(normGender)
+    err = 0
+    learn = 0
 
     for i in range(0, tc):
         for j in range(0, np):
             net = 0
-            for k in range(0, ni):
+            for k in range(0, ni -1):
                 net = net + weights[k] * trainIt[j][k]
             ou[j] = sign(net)
             # ou = sign(net)
             err = dOut[j] - ou[j]
             te = err * err
             totalTE = totalTE + te
-            if totalTE < epsilon:
-                break
             learn = alpha * err
-            print(i, j, net, err, learn, weights, f, totalTE)
-            f.write("ite= " + str(i) + "  p=" + str(j) + " net= " + str(net) + " err= " + str(err) + " lrn= " + str(learn) + " wei= " + str(weights[0]) +" , " + str(weights[1]) + " , " + str(weights[2]) + "\n")
+            #print(i, j, net, err, learn, weights, f, totalTE)
+            #f.write("ite= " + str(i) + "  p=" + str(j) + " net= " + str(net) + " err= " + str(err) + " lrn= " + str(learn) + " wei= " + str(weights[0]) +" , " + str(weights[1]) + " , " + str(weights[2]) + "\n")
             for b in range(0, ni):
                 weights[b] = weights[b] + learn*trainIt[j][b]
             #print(totalTE)
+        if totalTE < epsilon:
+            break
         #print(totalTE)
+    print(err)
+    print(learn)
+    print(weights)
+    print(totalTE)
 
-    f.close()
+
+    #plt.scatter(height, weights)
+    #plt.plot()
+    #plt.show()
+
+
+
+
+    #f.write("total error = " + str(totalTE))
+    #f.close()
 
 
 def printArr(i, j, net, err, learn, weights, f, te):
@@ -127,12 +146,19 @@ def sign(net):
 
 
 # this method will return to use the training and testing data
-def percentData(weight, height, gender, percent):
+def percentData(height, weight, gender, percent):
 
     # all the lists with all the original values
     fullWeight = weight
     fullHeight = height
     fullGender = gender
+
+    menWeight = fullWeight[:2000]
+    menHeight = fullHeight[:2000]
+    menGender = fullGender[:2000]
+    womenWeight = fullWeight[2000:]
+    womenHeight = fullHeight[2000:]
+    womenGender = fullGender[2000:]
 
     # get the percent, then get where to find the first index where we will split
     # our data into both sets. From 0 to indexToGetPercent is our training and from index + 1 to end is testing
@@ -140,14 +166,33 @@ def percentData(weight, height, gender, percent):
     lengthOfArray = len(fullWeight)
     indexToGetPercent = int(value * lengthOfArray)
 
-    weightTraining = fullWeight[:indexToGetPercent]
-    weightTesting = fullWeight[indexToGetPercent:]
-    heightTraining = fullHeight[:indexToGetPercent]
-    heightTesting = fullHeight
-    genderTraining = fullGender[:indexToGetPercent]
-    genderTesting = fullGender
 
-    return weightTraining, weightTesting, heightTraining, heightTesting, genderTraining, genderTesting
+
+    menWeightTraining = menWeight[:indexToGetPercent]
+    menWeightTesting = menWeight[indexToGetPercent:]
+    menHeightTraining = menHeight[:indexToGetPercent]
+    menHeightTesting = menHeight[indexToGetPercent:]
+    menGenderTraining = menGender[:indexToGetPercent]
+    menGenderTesting = menGender[indexToGetPercent:]
+
+    womenWeightTraining = womenWeight[:indexToGetPercent]
+    womenWeightTesting = womenWeight[indexToGetPercent:]
+    womenHeightTraining = womenHeight[:indexToGetPercent]
+    womenHeightTesting = womenHeight[indexToGetPercent:]
+    womenGenderTraining = womenGender[:indexToGetPercent]
+    womenGenderTesting = womenGender[indexToGetPercent:]
+
+    weightTraining = menWeightTraining + womenWeightTraining
+    weightTesting = menWeightTesting + womenWeightTesting
+    heightTraining = menHeightTraining + womenHeightTraining
+    heightTesting = menHeightTesting + womenHeightTesting
+    genderTraining = menGenderTraining + womenGenderTraining
+    genderTesting = menGenderTesting + womenGenderTesting
+
+    trainArray = list(zip(weightTraining, heightTraining, genderTraining))
+    testArray = list(zip(weightTesting, heightTesting, genderTesting))
+
+    return trainArray, testArray
 
 
 
